@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cartões e Viagens · Vitor Rocha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#1E2761; --navy-2:#141a45; --gold:#C9A84C; --gold-soft:#e4cf8f;
+  --bg:#0A0C1A; --card:#11152e; --card-2:#161b3a; --line:rgba(201,168,76,.22);
+  --txt:#eef0f8; --muted:#a3a9c4; --ok:#5fc59a; --warn:#e6a34f; --bad:#e2737a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:'DM Sans',system-ui,sans-serif;line-height:1.6;font-size:16px}
+h1,h2,h3{font-family:'Playfair Display',Georgia,serif;font-weight:600;line-height:1.2}
+a{color:var(--gold)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+
+/* ---------- LOCK ---------- */
+#lock{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:radial-gradient(circle at 50% 30%,#1E2761 0%,#0A0C1A 70%);z-index:100}
+.lock-box{width:100%;max-width:400px;background:rgba(17,21,46,.9);border:1px solid var(--line);border-radius:18px;padding:40px 30px;text-align:center}
+.lock-box .mono{width:64px;height:64px;border-radius:50%;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;
+  margin:0 auto 20px;font-family:'Playfair Display';font-size:24px;color:var(--gold)}
+.lock-box h1{font-size:24px;margin-bottom:6px}
+.lock-box p{color:var(--muted);font-size:14px;margin-bottom:24px}
+.lock-box input{width:100%;padding:14px 16px;border-radius:10px;border:1px solid var(--line);background:#0b0e22;color:var(--txt);font-size:16px;text-align:center;letter-spacing:2px}
+.lock-box input:focus{outline:none;border-color:var(--gold)}
+.lock-box button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:10px;background:var(--gold);color:#0A0C1A;font-weight:700;font-size:15px;cursor:pointer}
+#err{color:var(--bad);font-size:13px;margin-top:10px;min-height:18px}
+#app{display:none}
+
+/* ---------- HERO ---------- */
+.hero{background:linear-gradient(160deg,var(--navy) 0%,var(--navy-2) 55%,var(--bg) 100%);padding:70px 0 60px;border-bottom:1px solid var(--line)}
+.eyebrow{color:var(--gold);text-transform:uppercase;letter-spacing:3px;font-size:12px;font-weight:600}
+.hero h1{font-size:clamp(32px,5vw,50px);margin:12px 0 14px}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero p.lead{color:#c9cde2;max-width:680px;font-size:17px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-top:36px}
+.kpi{background:rgba(10,12,26,.45);border:1px solid var(--line);border-radius:14px;padding:18px}
+.kpi .v{font-family:'Playfair Display';font-size:28px;color:var(--gold)}
+.kpi .l{color:var(--muted);font-size:13px}
+
+section{padding:60px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.sec-head{margin-bottom:28px}
+.sec-head .num{color:var(--gold);font-family:'Playfair Display';font-size:15px}
+.sec-head h2{font-size:clamp(24px,3.4vw,34px);margin-top:4px}
+.sec-head p{color:var(--muted);margin-top:8px;max-width:720px}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:24px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+
+/* ---------- TABLE ---------- */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;min-width:760px;font-size:14px}
+th{background:var(--navy);color:var(--gold-soft);text-align:left;padding:13px 14px;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.8px}
+td{padding:13px 14px;border-top:1px solid rgba(255,255,255,.06);vertical-align:top}
+tr:nth-child(even) td{background:rgba(255,255,255,.015)}
+td strong{color:#fff}
+.pos{color:var(--ok);font-weight:600}.neg{color:var(--bad);font-weight:600}.mid{color:var(--warn);font-weight:600}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:20px;letter-spacing:.4px;text-transform:uppercase}
+.t-top{background:rgba(201,168,76,.18);color:var(--gold)}
+.t-ok{background:rgba(95,197,154,.15);color:var(--ok)}
+.t-warn{background:rgba(230,163,79,.15);color:var(--warn)}
+.t-bad{background:rgba(226,115,122,.15);color:var(--bad)}
+
+/* ---------- ACCORDION CARDS ---------- */
+.acc{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.acc-h{width:100%;display:flex;align-items:center;gap:14px;padding:18px 20px;background:none;border:0;color:var(--txt);cursor:pointer;text-align:left;font:inherit}
+.acc-h .rank{flex:0 0 38px;height:38px;border-radius:50%;background:var(--navy);border:1px solid var(--gold);color:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Playfair Display';font-weight:700}
+.acc-h .ttl{flex:1}
+.acc-h .ttl b{display:block;font-size:17px}
+.acc-h .ttl span{color:var(--muted);font-size:13px}
+.acc-h .ret{text-align:right;font-family:'Playfair Display';font-size:20px;color:var(--gold);white-space:nowrap}
+.acc-h .ret small{display:block;font-family:'DM Sans';font-size:11px;color:var(--muted)}
+.acc-h .chev{transition:transform .25s;color:var(--gold);font-size:18px}
+.acc.open .chev{transform:rotate(180deg)}
+.acc-b{max-height:0;overflow:hidden;transition:max-height .35s ease}
+.acc-in{padding:0 20px 22px;border-top:1px solid rgba(255,255,255,.06)}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:18px 0}
+.fact{background:var(--card-2);border-radius:10px;padding:12px 14px}
+.fact .k{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.6px}
+.fact .val{font-weight:600;margin-top:2px}
+.pc{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pc h4{font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.pc ul{list-style:none}.pc li{padding:4px 0 4px 20px;position:relative;font-size:14px;color:#d6d9ea}
+.pc .p h4{color:var(--ok)}.pc .c h4{color:var(--bad)}
+.pc .p li:before{content:"+";position:absolute;left:0;color:var(--ok);font-weight:700}
+.pc .c li:before{content:"–";position:absolute;left:0;color:var(--bad);font-weight:700}
+.verdict{margin-top:16px;padding:14px 16px;border-left:3px solid var(--gold);background:rgba(201,168,76,.07);border-radius:0 10px 10px 0;font-size:14px}
+
+/* ---------- STRATEGY ---------- */
+.strat{position:relative;padding-top:30px}
+.strat .badge{position:absolute;top:-1px;left:24px;background:var(--gold);color:#0A0C1A;font-size:11px;font-weight:700;padding:4px 12px;border-radius:0 0 8px 8px;letter-spacing:.8px;text-transform:uppercase}
+.strat h3{font-size:22px;margin-bottom:8px}
+.strat .big{font-family:'Playfair Display';font-size:34px;color:var(--gold);margin:10px 0 2px}
+.strat p,.strat li{color:#cfd3e6;font-size:14.5px}
+.strat ul{padding-left:18px;margin-top:10px}.strat li{margin:4px 0}
+
+/* ---------- CHECKLIST ---------- */
+.chk-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px}
+.counter{font-family:'Playfair Display';color:var(--gold);font-size:20px}
+.bar{height:6px;background:rgba(255,255,255,.08);border-radius:6px;overflow:hidden;margin-bottom:18px}
+.bar i{display:block;height:100%;width:0;background:var(--gold);transition:width .3s}
+.chk{display:flex;gap:14px;align-items:flex-start;padding:14px 16px;background:var(--card);border:1px solid rgba(255,255,255,.07);border-radius:12px;margin-bottom:10px;cursor:pointer;user-select:none}
+.chk .box{flex:0 0 22px;height:22px;border-radius:6px;border:1.5px solid var(--gold);display:flex;align-items:center;justify-content:center;color:#0A0C1A;font-weight:700;font-size:14px;margin-top:1px}
+.chk.done .box{background:var(--gold)}
+.chk.done .t{color:var(--muted);text-decoration:line-through}
+.chk .t b{display:block}.chk .t span{font-size:13.5px;color:var(--muted)}
+
+.rules{counter-reset:r}
+.rule{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+.rule:last-child{border:0}
+.rule:before{counter-increment:r;content:counter(r,decimal-leading-zero);font-family:'Playfair Display';color:var(--gold);font-size:22px;flex:0 0 36px}
+.rule b{display:block;margin-bottom:2px}.rule span{color:var(--muted);font-size:14px}
+
+.chart-box{position:relative;height:380px}
+.note{font-size:12.5px;color:var(--muted);margin-top:12px}
+
+.cta{text-align:center;padding:60px 0;background:linear-gradient(180deg,var(--bg),var(--navy-2))}
+.cta h2{font-size:30px;margin-bottom:10px}
+.cta p{color:var(--muted);margin-bottom:24px}
+.btn{display:inline-block;background:var(--gold);color:#0A0C1A;padding:15px 30px;border-radius:40px;font-weight:700;text-decoration:none}
+footer{padding:36px 0 50px;text-align:center;color:var(--muted);font-size:13px}
+footer .sig{font-family:'Playfair Display';color:var(--txt);font-size:20px}
+footer .role{color:var(--gold);margin:2px 0 14px}
+.sources{font-size:12.5px;color:var(--muted)}
+.sources li{margin:4px 0 4px 18px}
+
+@media(max-width:640px){
+  .pc{grid-template-columns:1fr}
+  .acc-h .ret{font-size:16px}
+  .acc-h .chev{display:none}
+  .hero{padding:50px 0 44px}
+}
+</style>
+</head>
+<body>
+
+<div id="lock">
+  <div class="lock-box">
+    <div class="mono">MM</div>
+    <h1>Relatório confidencial</h1>
+    <p>Estratégia de cartões de crédito preparada para Vitor Rocha</p>
+    <input id="pw" type="password" placeholder="Digite sua senha" autocomplete="off">
+    <button onclick="unlock()">Acessar relatório</button>
+    <div id="err"></div>
+  </div>
+</div>
+
+<div id="app">
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">Planejamento Financeiro · Outubro 2026</div>
+    <h1>Seus gastos de hoje podem pagar <em>suas próximas viagens</em></h1>
+    <p class="lead">Vitor, você gasta cerca de R$ 6.500 por mês no cartão e gosta de viajar. Com o cartão certo, esse fluxo vira milhas e benefícios de viagem, <strong>sem anuidade e sem exigir investimentos</strong>.</p>
+    <div class="kpis">
+      <div class="kpi"><div class="v">≈ 30 mil</div><div class="l">milhas LATAM por ano, só com seus gastos atuais</div></div>
+      <div class="kpi"><div class="v">+ 20 mil</div><div class="l">milhas de bônus no 1º ano (em campanha)</div></div>
+      <div class="kpi"><div class="v">R$ 0</div><div class="l">de anuidade (isenta a partir de R$ 4 mil/fatura)</div></div>
+      <div class="kpi"><div class="v">R$ 0</div><div class="l">de investimento exigido</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 01 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">01</div>
+      <h2>O critério que define a escolha</h2>
+      <p>Hoje você não tem investimentos, o que elimina os cartões premium que exigem dinheiro aplicado no banco. Também ficam de fora os que só isentam a anuidade acima de <strong>R$ 8 mil de gasto mensal</strong>. Como você viaja, priorizamos cartões que <strong>geram milhas e ficam isentos com o gasto que você já tem</strong>.</p>
+    </div>
+    <div class="grid2">
+      <div class="panel">
+        <h3 style="font-size:19px;margin-bottom:10px">Milhas ou cashback?</h3>
+        <p style="color:#cfd3e6;font-size:14.5px">No seu volume de gasto, os dois rendem valores parecidos: cerca de R$ 750 a R$ 1.200 por ano. As <strong>milhas vencem quando bem resgatadas</strong>, em datas flexíveis, promoções e viagens mais longas. O cashback vence em simplicidade. Para quem viaja e tem disciplina de resgate, milhas são o melhor caminho.</p>
+      </div>
+      <div class="panel">
+        <h3 style="font-size:19px;margin-bottom:10px">Antes de tudo: a fatura cabe?</h3>
+        <p style="color:#cfd3e6;font-size:14.5px">Nenhuma milha compensa juros. A estratégia só funciona se os R$ 6.500 forem <strong>pagos integralmente todo mês</strong>, dentro do orçamento, e se as viagens couberem no planejamento.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 02 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">02</div>
+      <h2>Comparativo para o seu perfil</h2>
+      <p>Retorno estimado em 12 meses, com fatura média de R$ 6.500 (≈ US$ 15 mil por ano), sem nenhum investimento e já descontada a anuidade quando não há isenção.</p>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Cartão</th><th>Recompensa</th><th>Anuidade</th><th>Isenção</th><th>Milhas/ano</th><th>Valor estimado/ano</th><th>Veredito</th></tr></thead>
+        <tbody>
+          <tr><td><strong>LATAM Pass Itaú Platinum</strong></td><td>2 milhas/US$ (3 com Clube, nacional)</td><td>R$ 798</td><td><span class="pos">Fatura ≥ R$ 4 mil ✓</span></td><td>≈ 30.000 LATAM</td><td class="pos">R$ 750 a R$ 1.200</td><td><span class="tag t-top">Recomendado</span></td></tr>
+          <tr><td><strong>Azul Itaú Platinum</strong></td><td>2,2 pts/US$ (2,6 com Clube)</td><td>R$ 798</td><td><span class="pos">Fatura ≥ R$ 4 mil ✓</span></td><td>≈ 33.000 Azul</td><td class="pos">R$ 528 a R$ 990</td><td><span class="tag t-ok">Se voa Azul</span></td></tr>
+          <tr><td><strong>PicPay Epic</strong><br><small>Mastercard Black</small></td><td>1,3% nacional · até 4% internacional</td><td>R$ 598,80</td><td><span class="pos">Gasto ≥ R$ 5 mil/mês ✓</span></td><td>— (cashback)</td><td class="pos">R$ 1.014</td><td><span class="tag t-ok">Alternativa flexível</span></td></tr>
+          <tr><td><strong>Itaú Uniclass Black/Infinite</strong></td><td>2,5 pts/US$ (fatura ≥ R$ 4 mil)</td><td>Mensalidade</td><td>Salário no Itaú (folha)</td><td>≈ 37.500 pts Itaú</td><td class="mid">R$ 750 a R$ 1.313*</td><td><span class="tag t-ok">Se salário no Itaú</span></td></tr>
+          <tr><td><strong>C6 Carbon</strong></td><td>2,5 pts/US$</td><td>R$ 1.176</td><td><span class="neg">R$ 8 mil/mês ✗</span></td><td>≈ 37.500 Átomos</td><td class="neg">−R$ 426 a +R$ 137</td><td><span class="tag t-bad">Fase 2</span></td></tr>
+          <tr><td><strong>LATAM Pass Itaú Black</strong></td><td>2,5 milhas/US$ nacional</td><td>R$ 1.260</td><td><span class="neg">R$ 10 mil/mês ✗</span></td><td>≈ 37.500 LATAM</td><td class="neg">−R$ 322 a +R$ 52</td><td><span class="tag t-bad">Fase 2</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Milhas valorizadas pelo milheiro de mercado (LATAM R$ 25, Azul R$ 16) até um bom resgate (LATAM R$ 40, Azul R$ 30), com dólar a R$ 5,20. * Isenção apenas se o salário cair no Itaú. Bônus de adesão dependem de campanha vigente no momento do pedido. A aprovação depende de análise de crédito. Regras pesquisadas em outubro/2026; confirmar antes de solicitar.</p>
+  </div>
+</section>
+
+<!-- 03 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">03</div>
+      <h2>Retorno anual lado a lado</h2>
+      <p>Cenário base (milhas pelo valor de mercado) contra cenário otimizado (resgates bem feitos e, no PicPay, três meses por ano de cashback em dobro). Não inclui bônus de adesão.</p>
+    </div>
+    <div class="panel"><div class="chart-box"><canvas id="chart"></canvas></div></div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">04</div>
+      <h2>Análise cartão a cartão</h2>
+      <p>Toque em cada cartão para ver os detalhes.</p>
+    </div>
+
+    <div class="acc open">
+      <button class="acc-h"><span class="rank">1</span><span class="ttl"><b>LATAM Pass Itaú Mastercard Platinum</b><span>Milhas direto na companhia com a maior malha internacional da região</span></span><span class="ret">≈ 30 mil<small>milhas por ano</small></span><span class="chev">▾</span></button>
+      <div class="acc-b"><div class="acc-in">
+        <div class="facts">
+          <div class="fact"><div class="k">Pontuação</div><div class="val">2 milhas/US$ · 3/US$ nacional com Clube LATAM Pass</div></div>
+          <div class="fact"><div class="k">Anuidade</div><div class="val">R$ 798, 100% isenta com fatura ≥ R$ 4 mil</div></div>
+          <div class="fact"><div class="k">Bônus de adesão</div><div class="val">Até 20 mil milhas com R$ 12 mil nas 3 primeiras faturas (campanha recente)</div></div>
+          <div class="fact"><div class="k">Extras</div><div class="val">Passagens LATAM em até 10x sem juros, desconto na compra de milhas, upgrades</div></div>
+        </div>
+        <div class="pc">
+          <div class="p"><h4>A favor</h4><ul><li>Sua fatura supera a meta de isenção com R$ 2.500 de folga</li><li>Milhas creditadas direto na LATAM, sem intermediário</li><li>No primeiro ano, ≈ 50 mil milhas com o bônus</li><li>Malha nacional e internacional ampla (Oneworld)</li></ul></div>
+          <div class="c"><h4>Atenção</h4><ul><li>Milhas expiram em 36 meses: é preciso planejar o resgate</li><li>Fica preso a uma companhia</li><li>Benefícios de sala VIP e seguro são limitados na categoria Platinum</li></ul></div>
+        </div>
+        <div class="verdict"><strong>Para você:</strong> o melhor equilíbrio entre milhas, isenção garantida e zero investimento. Em ritmo normal, o acúmulo anual cobre cerca de uma viagem nacional ida e volta; no primeiro ano, com o bônus, cerca de duas.</div>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <button class="acc-h"><span class="rank">2</span><span class="ttl"><b>Azul Itaú Mastercard Platinum</b><span>Mesma lógica, para quem voa Azul</span></span><span class="ret">≈ 33 mil<small>pontos por ano</small></span><span class="chev">▾</span></button>
+      <div class="acc-b"><div class="acc-in">
+        <div class="facts">
+          <div class="fact"><div class="k">Pontuação</div><div class="val">2,2 pts/US$ · 2,6 com Clube Azul · até 3,9 em compras Azul</div></div>
+          <div class="fact"><div class="k">Anuidade</div><div class="val">R$ 798, 100% isenta com fatura ≥ R$ 4 mil</div></div>
+          <div class="fact"><div class="k">Bônus de adesão</div><div class="val">16 mil pontos com R$ 4 mil em cada uma das 3 primeiras faturas</div></div>
+        </div>
+        <div class="verdict"><strong>Para você:</strong> escolha esta versão se a Azul atende melhor o aeroporto de onde você costuma sair. O ponto Azul costuma valer menos que a milha LATAM no mercado, mas rende bem em rotas regionais.</div>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <button class="acc-h"><span class="rank">3</span><span class="ttl"><b>PicPay Epic Mastercard Black</b><span>Para quem prefere flexibilidade e viaja muito para fora</span></span><span class="ret">R$ 1.014<small>por ano</small></span><span class="chev">▾</span></button>
+      <div class="acc-b"><div class="acc-in">
+        <div class="facts">
+          <div class="fact"><div class="k">Cashback</div><div class="val">1,3% nacional · até 4% internacional</div></div>
+          <div class="fact"><div class="k">Anuidade</div><div class="val">R$ 598,80, isenta com R$ 5 mil/mês</div></div>
+          <div class="fact"><div class="k">Salas VIP</div><div class="val">Salas Mastercard GRU + 2 LoungeKey/ano</div></div>
+          <div class="fact"><div class="k">Extras</div><div class="val">Benefícios Mastercard Black de viagem, chip internacional, Amazon Prime</div></div>
+        </div>
+        <div class="pc">
+          <div class="p"><h4>A favor</h4><ul><li>Os 4% de cashback lá fora praticamente compensam o IOF</li><li>Dinheiro livre: compra a passagem que estiver mais barata, em qualquer companhia</li><li>Acesso a salas VIP sem investir</li></ul></div>
+          <div class="c"><h4>Atenção</h4><ul><li>Não gera milhas</li><li>Meta de isenção mais alta (R$ 5 mil) que nos cartões Platinum</li></ul></div>
+        </div>
+        <div class="verdict"><strong>Para você:</strong> a melhor opção se as viagens forem majoritariamente internacionais ou se você não quiser se preocupar com resgate e validade de milhas.</div>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <button class="acc-h"><span class="rank">4</span><span class="ttl"><b>Itaú Uniclass Mastercard Black / Visa Infinite</b><span>Só se o seu salário cair no Itaú</span></span><span class="ret">≈ 37,5 mil<small>pontos por ano</small></span><span class="chev">▾</span></button>
+      <div class="acc-b"><div class="acc-in">
+        <div class="facts">
+          <div class="fact"><div class="k">Pontuação</div><div class="val">2,5 pts/US$ com fatura ≥ R$ 4 mil</div></div>
+          <div class="fact"><div class="k">Salas VIP</div><div class="val">4 acessos/ano</div></div>
+          <div class="fact"><div class="k">Isenção sem investir</div><div class="val">Salário via folha no Itaú</div></div>
+        </div>
+        <div class="verdict"><strong>Para você:</strong> se o salário já cai no Itaú, é a melhor opção de viagem: mais pontos, salas VIP e categoria Black/Infinite, sem custo.</div>
+      </div></div>
+    </div>
+
+    <div class="acc">
+      <button class="acc-h"><span class="rank">✗</span><span class="ttl"><b>C6 Carbon · LATAM Pass Black · Nubank Ultravioleta</b><span>Ótimos para viagem, mas não para o seu momento</span></span><span class="ret" style="color:var(--bad)">Negativo<small>sem isenção</small></span><span class="chev">▾</span></button>
+      <div class="acc-b"><div class="acc-in">
+        <p style="color:#cfd3e6;font-size:14.5px;margin-top:16px">Pontuam mais e oferecem mais salas VIP, mas exigem gasto acima de R$ 8 mil (ou R$ 10 mil no LATAM Black) ou investimentos para isentar a anuidade. Com R$ 6.500 de fatura, a anuidade cheia, entre R$ 1.068 e R$ 1.260, consome praticamente todo o valor das milhas.</p>
+        <div class="verdict"><strong>Para você:</strong> voltam ao radar na Fase 2, com patrimônio investido.</div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">05</div>
+      <h2>Estratégia recomendada</h2>
+      <p>O cartão certo para hoje, e como ele evolui conforme seu patrimônio cresce.</p>
+    </div>
+    <div class="grid2">
+      <div class="panel strat">
+        <span class="badge">Fase 1 · Agora</span>
+        <h3>LATAM Pass Itaú Platinum como cartão único</h3>
+        <div class="big">≈ 30 mil milhas/ano</div>
+        <p>Cerca de 50 mil no primeiro ano com o bônus de adesão. Sem investir e sem anuidade.</p>
+        <ul>
+          <li>Concentrar 100% dos gastos no cartão (sempre acima de R$ 4 mil/mês)</li>
+          <li>Pedir durante uma campanha de bônus de adesão</li>
+          <li>Voa mais Azul? Trocar pelo Azul Itaú Platinum</li>
+          <li>Viaja mais para fora e prefere flexibilidade? PicPay Epic</li>
+        </ul>
+      </div>
+      <div class="panel strat">
+        <span class="badge">Fase 2 · Com reserva formada</span>
+        <h3>Subir de categoria</h3>
+        <div class="big">até 3,5 pts/US$</div>
+        <p>Conforme você investe, cartões com mais pontos e salas VIP ficam gratuitos.</p>
+        <ul>
+          <li><strong>R$ 5 mil</strong> investidos na XP → XP One Visa Infinite</li>
+          <li><strong>R$ 50 mil</strong> → C6 Carbon isento (pontos que não expiram, transferíveis para várias companhias)</li>
+          <li>Fatura acima de R$ 10 mil → LATAM Pass Black com 50% de desconto</li>
+          <li>Reavaliamos juntos em cada marco</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">06</div>
+      <h2>Regras de ouro do viajante</h2>
+      <p>O cartão é ferramenta de planejamento, nunca de crédito.</p>
+    </div>
+    <div class="panel rules">
+      <div class="rule"><div><b>Pague sempre a fatura integral</b><span>Juros do rotativo superam o valor de qualquer milha em poucos dias.</span></div></div>
+      <div class="rule"><div><b>Milha boa é milha resgatada</b><span>As milhas LATAM vencem em 36 meses. Defina um destino-alvo e acompanhe o saldo.</span></div></div>
+      <div class="rule"><div><b>Compare sempre milhas com dinheiro</b><span>Divida o preço da passagem pelas milhas pedidas. Abaixo de R$ 25 por milheiro, pague em dinheiro e guarde as milhas.</span></div></div>
+      <div class="rule"><div><b>Assine clube só com resgate em vista</b><span>O Clube LATAM Pass aumenta a pontuação, mas é uma despesa fixa. Só compensa se as milhas extras forem usadas.</span></div></div>
+      <div class="rule"><div><b>Viagem entra no orçamento</b><span>Milhas reduzem o custo da passagem, mas hospedagem, alimentação e passeios precisam de uma reserva própria para viagens.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 07 -->
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="num">07</div>
+      <h2>Próximos passos</h2>
+    </div>
+    <div class="chk-top"><span style="color:var(--muted)">Marque conforme for concluindo</span><span class="counter" id="cnt">0 / 6</span></div>
+    <div class="bar"><i id="barfill"></i></div>
+    <div id="checklist">
+      <div class="chk"><span class="box"></span><span class="t"><b>Confirmar companhia e tipo de viagem preferidos</b><span>LATAM, Azul ou internacional, e de qual aeroporto você sai</span></span></div>
+      <div class="chk"><span class="box"></span><span class="t"><b>Solicitar o cartão em período de bônus de adesão</b><span>Conferir a campanha vigente antes de pedir</span></span></div>
+      <div class="chk"><span class="box"></span><span class="t"><b>Migrar assinaturas e débitos recorrentes</b><span>Garante a fatura acima da meta de isenção</span></span></div>
+      <div class="chk"><span class="box"></span><span class="t"><b>Ativar débito automático da fatura integral</b><span>Elimina risco de atraso e de perder as milhas do mês</span></span></div>
+      <div class="chk"><span class="box"></span><span class="t"><b>Definir a primeira viagem-alvo com milhas</b><span>Destino, época e quantidade de milhas necessária</span></span></div>
+      <div class="chk"><span class="box"></span><span class="t"><b>Criar a reserva de viagens no orçamento</b><span>Para hospedagem, passeios e taxas de embarque</span></span></div>
+    </div>
+  </div>
+</section>
+
+<div class="cta">
+  <div class="wrap">
+    <h2>Dúvidas sobre a escolha?</h2>
+    <p>Fale comigo antes de solicitar — validamos juntos a melhor rota para o seu plano.</p>
+    <a class="btn" href="https://wa.me/5599991756837?text=Ol%C3%A1%20Matheus%2C%20vi%20o%20relat%C3%B3rio%20de%20cart%C3%B5es" target="_blank" rel="noopener">Conversar no WhatsApp</a>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="sig">Matheus Melo</div>
+    <div class="role">Financial Advisor Master · Grão | Grupo Primo</div>
+    <p style="max-width:720px;margin:0 auto 22px">Este material tem caráter educativo e foi elaborado com base em informações públicas disponíveis em outubro de 2026. Condições de cartões (pontuação, anuidade, isenção e salas VIP) podem ser alteradas pelos emissores a qualquer momento e estão sujeitas a análise de crédito. Não há qualquer parceria ou remuneração com as instituições citadas.</p>
+    <details class="sources" style="text-align:left;max-width:720px;margin:0 auto">
+      <summary style="cursor:pointer;color:var(--gold)">Fontes consultadas</summary>
+      <ul style="margin-top:8px">
+        <li><a href="https://www.melhorescartoes.com.br/cartoes-picpay-anuidade-gratis-ago26.html" target="_blank">Melhores Cartões — PicPay Black e Epic (ago/2026)</a></li>
+        <li><a href="https://www.melhorescartoes.com.br/super-cashback-picpay-cartoes-credito-ago26.html" target="_blank">Melhores Cartões — Super cashback PicPay</a></li>
+        <li><a href="https://www.melhorescartoes.com.br/melhores-cartoes-cashback-anuidade-gratis-jun26.html" target="_blank">Melhores Cartões — Ranking cashback (jun/2026)</a></li>
+        <li><a href="https://cartoeseviagens.com.br/cartao-bradesco-mastercard-amazon" target="_blank">Cartões e Viagens — Bradesco Mastercard Amazon</a></li>
+                <li><a href="https://www.melhorescartoes.com.br/c6-bank-oferece-anuidade-gratis-c6-carbon-jul26.html" target="_blank">Melhores Cartões — C6 Carbon</a></li>
+        <li><a href="https://www.melhorescartoes.com.br/cartao-nubank-ultravioleta-primeira-anuidade-gratis-jun26.html" target="_blank">Melhores Cartões — Nubank Ultravioleta</a></li>
+        <li><a href="https://www.itau.com.br/media/dam/m/144e3f9526da94f4/original/29-07-2026-Clientes-Itau-Uniclass-passam-a-contar-com-ate-2-5-pontos-por-do-lar-gasto-e-4-acessos-anuais-em-salas-VIP-nos-carto-es-de-cre-dito-premium.pdf" target="_blank">Itaú — Comunicado Uniclass (jul/2026)</a></li>
+        <li><a href="https://passageirodeprimeira.com/?p=556801" target="_blank">Passageiro de Primeira — LATAM Pass Itaú</a></li>
+        <li><a href="https://passageirodeprimeira.com/?p=562492" target="_blank">Passageiro de Primeira — LATAM Pass Itaú Platinum (ago/2026)</a></li>
+        <li><a href="https://passageirodeprimeira.com/?p=564168" target="_blank">Passageiro de Primeira — Azul Itaú Platinum (set/2026)</a></li>
+        <li><a href="https://cartoeseviagens.com.br/cotacao-milheiro" target="_blank">Cartões e Viagens — Cotação do milheiro</a></li>
+      </ul>
+    </details>
+  </div>
+</footer>
+</div>
+
+<script>
+const PASS = "vitor2026";
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') unlock(); });
+
+function unlock(){
+  const v = document.getElementById('pw').value.trim().toLowerCase();
+  if (v !== PASS){ document.getElementById('err').textContent = 'Senha incorreta. Tente novamente.'; return; }
+  document.getElementById('lock').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  initAccordion(); initChecklist(); loadChart();
+}
+
+function initAccordion(){
+  document.querySelectorAll('.acc').forEach(a => {
+    const b = a.querySelector('.acc-b');
+    if (a.classList.contains('open')) b.style.maxHeight = b.scrollHeight + 'px';
+    a.querySelector('.acc-h').addEventListener('click', () => {
+      a.classList.toggle('open');
+      b.style.maxHeight = a.classList.contains('open') ? b.scrollHeight + 'px' : '0';
+    });
+  });
+}
+
+function initChecklist(){
+  const items = [...document.querySelectorAll('.chk')];
+  const update = () => {
+    const d = items.filter(i => i.classList.contains('done')).length;
+    document.getElementById('cnt').textContent = d + ' / ' + items.length;
+    document.getElementById('barfill').style.width = (d / items.length * 100) + '%';
+  };
+  items.forEach(i => i.addEventListener('click', () => {
+    i.classList.toggle('done');
+    i.querySelector('.box').textContent = i.classList.contains('done') ? '✓' : '';
+    update();
+  }));
+  update();
+}
+
+function loadChart(){
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
+  s.onload = drawChart;
+  document.head.appendChild(s);
+}
+
+function drawChart(){
+  Chart.defaults.color = '#a3a9c4';
+  Chart.defaults.font.family = "'DM Sans', sans-serif";
+  new Chart(document.getElementById('chart'), {
+    type: 'bar',
+    data: {
+      labels: ['LATAM Platinum','Azul Platinum','PicPay Epic','Itaú Uniclass*','C6 Carbon','LATAM Black'],
+      datasets: [
+        { label: 'Cenário base', data: [750, 528, 1014, 750, -426, -322], backgroundColor: '#3a4690', borderRadius: 6 },
+        { label: 'Cenário otimizado', data: [1200, 990, 1268, 1313, 137, 52], backgroundColor: '#C9A84C', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { callbacks: { label: c => c.dataset.label + ': R$ ' + c.raw.toLocaleString('pt-BR') } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 0 } },
+        y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { callback: v => 'R$ ' + v.toLocaleString('pt-BR') } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
